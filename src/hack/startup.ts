@@ -8,7 +8,9 @@ const weaken_script = "/hack/just_weaken.js";
 /** @param {NS} ns */
 export async function main(ns: NS) {
 	if (ns.getHackingLevel() < 20) {
-		ns.alert("Level up to hacking level 20 first.");
+		ns.print("Level up to hacking level 20 first.");
+		ns.tail();
+		return;
 	}
 
 	ns.exec(exec_script, "home", 1, "foodnstuff", "all", grow_script, "n00dles");
