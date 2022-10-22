@@ -19,7 +19,7 @@ export async function main(ns: NS) {
 	const suffix = ns.args[1] as number | "all";
 
 	if (suffix === 'all') {
-		for (let i=1; i<=25; i++) {
+		for (let i = 1; i <= 25; i++) {
 			if (ns.serverExists(`homeserv-${i}`)) continue;
 			ns.purchaseServer(`homeserv-${i}`, Math.pow(2, power));
 		}
