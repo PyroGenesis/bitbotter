@@ -7,12 +7,14 @@ function printArgs(ns: NS) {
 	ns.tprint("Arguments needed for spawner.js");
 	ns.tprint("-s <script>    Script (with path) to spawn.");
 	ns.tprint("-m <mem>       Optional. Amount of memory to leave free, in GB.");
+	ns.tprint("-a <args>      Optional. Additional args to be provided to the script. Has to be the last argument switch.");
 }
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
 	let script = null;
 	let memory_to_leave = 0;
+	let additional_args: (string | number | boolean)[] = []
 
 	for (let i = 0; i < ns.args.length; i++) {
 		switch(ns.args[i]) {
@@ -38,6 +40,11 @@ export async function main(ns: NS) {
 				}
 				memory_to_leave = ns.args[i+1] as number;
 				i++;
+				break;
+						
+			case '-a':
+				additional_args = ns.args.slice(i + 1);
+				i = ns.args.length;
 				break;
 			
 			default:
@@ -69,5 +76,5 @@ export async function main(ns: NS) {
 	}
 	
 	// spawn the script
-	ns.spawn(script, max_threads, ...ns.args.slice(1));
+	ns.spawn(script, max_threads, ...additional_args);
 }
