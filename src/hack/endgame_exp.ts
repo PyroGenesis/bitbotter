@@ -8,7 +8,13 @@ const weaken_script = "/hack/just_weaken.js";
 /** @param {NS} ns */
 export async function main(ns: NS) {	
 	for (let i=1; i<=25; i++) {
-		if (!ns.serverExists(`homeserv-${i}`)) break;
-		ns.exec(exec_script, "home", 1, `homeserv-${i}`, "all", weaken_script, "foodnstuff");
+        const purchased_server = `homeserv-${i}`
+        // if the server doesn't exist, stop
+		if (!ns.serverExists(purchased_server)) break;
+
+        // first kill everything on that server
+        ns.killall(purchased_server);
+        // run weaken script for massive exp
+		ns.exec(exec_script, "home", 1, purchased_server, "all", weaken_script, "foodnstuff");
 	}
 }
