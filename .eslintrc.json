@@ -24,5 +24,6 @@
         "NetscriptDefinitions.d.ts"
     ],
     "rules": {
+        "no-constant-condition": "off"
     }
 }

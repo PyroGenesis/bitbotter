@@ -165,7 +165,6 @@ export async function main(ns: NS) {
 	// server object
 	// let server_obj = ns.getServer(server);
 	
-	// eslint-disable-next-line no-constant-condition
 	while (true) {
 		// need to update thread and timings if hacking level increases
 		if (hack_level !== ns.getHackingLevel()) {
