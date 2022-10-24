@@ -63,7 +63,11 @@ export async function main(ns: NS) {
 	// unique identifier for each batch
 	let id = 0;
 
-	for (const server of getServerList(ns)) {
+	// do all servers, but give priority to server with more money
+    const server_list = getServerList(ns);
+    server_list.sort((a, b) => b.max_money - a.max_money);
+
+	for (const server of server_list) {
 		// let min_security = ns.getServerMinSecurityLevel(server.name);
 		// let max_money = ns.getServerMaxMoney(server.name);
 
