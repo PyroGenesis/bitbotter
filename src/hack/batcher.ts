@@ -55,13 +55,19 @@ class LevelBasedParams {
 
 		// hack, weaken, grow, weaken
 		this.ram_per_batch = this.ns.getScriptRam(dispatch_script) + (1.70 * this.hack_threads) + (1.75 * this.weaken_1_threads) + (1.75 * this.grow_threads) + (1.75 * this.weaken_2_threads); 		
-		this.ns.print("INFO ram_per_batch:", this.ram_per_batch);
-
+		
 		// max time
 		this.server_obj.hackDifficulty = this.server_obj.minDifficulty; //+ Math.max(hack_security_inc, grow_security_inc);		
 		this.max_time = this.ns.formulas.hacking.weakenTime(this.server_obj, this.ns.getPlayer());
 
+		// max batches before paywindows fill the whole timeline
 		this.max_batches = Math.floor((this.max_time - JOB_SPACER) / (JOB_SPACER * 3 + BATCH_SPACER));
+		
+		// print details
+		this.ns.print("INFO HWGW: ", this.hack_threads, " ", this.weaken_1_threads, " ", this.grow_threads, " ", this.weaken_2_threads)
+		this.ns.print("INFO ram_per_batch:", this.ram_per_batch);
+		this.ns.print("INFO max_time:", this.max_time);
+		this.ns.print("INFO max_batches:", this.max_batches);
 	}
 }
 
@@ -164,6 +170,7 @@ export async function main(ns: NS) {
 		// need to update thread and timings if hacking level increases
 		if (hack_level !== ns.getHackingLevel()) {
 			await ns.writePort(port, "WARN hacking level changed");
+			ns.print("WARN hacking level changed");
 
 			// kills all dispatch and hack scripts because timings will no longer be consistent
 			ns.scriptKill(dispatch_script, host_server)
@@ -212,6 +219,7 @@ export async function main(ns: NS) {
 
 		// sleep until number of batches lessen back to 0 (skips all paywindows)
 		if (getDispatchCount(ns) === params.max_batches) {
+			ns.print("WARN: Reached batch limit")
 			while (getDispatchCount(ns) > 0) {
 				// while waiting for paywindows to finish, if the level changes, go to batch termination at start of loop
 				if (hack_level !== ns.getHackingLevel()) {
@@ -223,18 +231,18 @@ export async function main(ns: NS) {
 		}
 
 		// My logs
-		ns.print("id:", id);
-		ns.print("HWGW: ", params.hack_threads, " ", params.weaken_1_threads, " ", params.grow_threads, " ", params.weaken_2_threads)
-		// ns.print("hack_threads:", params.hack_threads); //, " hack_security_inc:", hack_security_inc);
-		// ns.print("weaken_1_threads:", params.weaken_1_threads);
-		// ns.print("grow_threads:", params.grow_threads); //, " grow_security_inc:", grow_security_inc);
-		// ns.print("weaken_2_threads:", params.weaken_2_threads);
-		ns.print("ram_per_batch:", params.ram_per_batch);
-		ns.print("max_time:", params.max_time);
-		ns.print("max_batches:", params.max_batches);
-		// ns.print("hack_time:", hack_time, " grow_time:", grow_time, " weaken_1_time:", weaken_1_time, " weaken_2_time:", weaken_2_time, " max_time:", max_time);
-		// ns.print("hack_level:", hack_level);
-		ns.print(" ");
+		ns.print(`Launched batch: ${id}, Total: ${getDispatchCount(ns)+1}/${params.max_batches}`);
+		// ns.print("HWGW: ", params.hack_threads, " ", params.weaken_1_threads, " ", params.grow_threads, " ", params.weaken_2_threads)
+		// // ns.print("hack_threads:", params.hack_threads); //, " hack_security_inc:", hack_security_inc);
+		// // ns.print("weaken_1_threads:", params.weaken_1_threads);
+		// // ns.print("grow_threads:", params.grow_threads); //, " grow_security_inc:", grow_security_inc);
+		// // ns.print("weaken_2_threads:", params.weaken_2_threads);
+		// ns.print("ram_per_batch:", params.ram_per_batch);
+		// ns.print("max_time:", params.max_time);
+		// ns.print("max_batches:", params.max_batches);
+		// // ns.print("hack_time:", hack_time, " grow_time:", grow_time, " weaken_1_time:", weaken_1_time, " weaken_2_time:", weaken_2_time, " max_time:", max_time);
+		// // ns.print("hack_level:", hack_level);
+		// ns.print(" ");
 
 		// dispatch
 		ns.exec(dispatch_script, host_server, 1, 
