@@ -172,7 +172,7 @@ export async function main(ns: NS) {
 			ns.print("WARN hacking level changed");
 
 			// kills all dispatch and hack scripts because timings will no longer be consistent
-			ns.scriptKill(dispatch_script, host_server)
+			ns.scriptKill(dispatch_script, host_server);
 			ns.scriptKill(hack_script, host_server);
 
 			// wait if there needs to be some grows
