@@ -73,11 +73,14 @@ export async function main(ns: NS) {
 
 		// const weaken_time = ns.getWeakenTime(server.name);
 		let finish_at = 0; //weaken_time;
+		let weaken_script_pid: number | null = null;
 
 		// weaken first
 		while (true) {
 			// if security level is already lowest, we break
-			if (ns.getServerSecurityLevel(server.name) === server.min_security) break;
+			if (ns.getServerSecurityLevel(server.name) === server.min_security) {
+				break;
+			} 
 			
 			// threads needed to attain min security
 			const weak_threads_needed = Math.ceil((ns.getServerSecurityLevel(server.name) - server.min_security) / 0.05);
@@ -98,7 +101,7 @@ export async function main(ns: NS) {
 			if (possible_now) {
 				// launch all needed weaken threads
 				ns.tprint(`Running ${weak_threads_needed} weakens for ${server.name}`);
-				ns.exec(weaken_script, host_server, weak_threads_needed, server.name, 0, id, 20);
+				weaken_script_pid = ns.exec(weaken_script, host_server, weak_threads_needed, server.name, 0, id, 20);
 
 				finish_at = weaken_time + 10000;
 				break;
@@ -106,9 +109,12 @@ export async function main(ns: NS) {
 			} else if (need_to_repeat) {
 				// launch all possible weaken threads, we will do more later
 				ns.tprint(`Running ${weak_threads_possible_curr} weakens for ${server.name}. Will repeat for more.`);
-				ns.exec(weaken_script, host_server, weak_threads_possible_curr, server.name, 0, id, 20);
+				weaken_script_pid = ns.exec(weaken_script, host_server, weak_threads_possible_curr, server.name, 0, id, 20);
 
 				await ns.sleep(weaken_time + 1000);
+				// since we wait for finishing, we reset finish time to 0
+				finish_at = 0;
+				// also, no weaken scripts for this server should be running here
 
 			} else if (possible_later) {
 				// wait until enough RAM is freed
@@ -119,6 +125,7 @@ export async function main(ns: NS) {
 					weak_threads_possible_curr = Math.floor((ns.getServer().maxRam - ns.getScriptRam(ns.getScriptName())) / 1.75);
 					possible_now = weak_threads_needed <= weak_threads_possible_curr;
 				}
+				// no weaken scripts will be running right now, but they will be when the execution loops back
 			}
 		}
 		
@@ -149,26 +156,37 @@ export async function main(ns: NS) {
 
 			const weaken_time = ns.getWeakenTime(server.name);
 
+			// are any earlier weaken scripts running?
+			// only delay if that's the case, otherwise don't
+			const is_weaken_running = weaken_script_pid !== null && ns.isRunning(weaken_script_pid)
+			const grow_delay = is_weaken_running ? finish_at - ns.getGrowTime(server.name) : 0;
+			finish_at += 10000;
+			const weaken_delay = is_weaken_running ? finish_at - ns.getWeakenTime(server.name) : 0;
+			finish_at += 10000;
+
 			if (possible_now) {
 				// launch all needed batches of grow-weaken
 				ns.tprint(`Running ${batches_needed} batches of grow-weaken for ${server.name}`);
-				ns.exec(grow_script, host_server, batches_needed * GROW_PER_WEAKEN, server.name, finish_at - ns.getGrowTime(server.name), id+1, 20);
-				finish_at += 10000;
-				ns.exec(weaken_script, host_server, batches_needed, server.name, finish_at - ns.getWeakenTime(server.name), id+1, 20);
+				ns.exec(grow_script, host_server, batches_needed * GROW_PER_WEAKEN, server.name, grow_delay, id+1, 20);
+				ns.exec(weaken_script, host_server, batches_needed, server.name, weaken_delay, id+1, 20);
 
 				break;
 			} else if (need_to_repeat) {
 				// launch all possible batches of grow-weaken, we will do more later
 				ns.tprint(`Running ${batches_possible_curr} batches of grow-weaken for ${server.name}. Will repeat for more.`);
-				ns.exec(grow_script, host_server, batches_possible_curr * GROW_PER_WEAKEN, server.name, finish_at - ns.getGrowTime(server.name), id+1, 20);
-				finish_at += 10000;
-				ns.exec(weaken_script, host_server, batches_possible_curr, server.name, finish_at - ns.getWeakenTime(server.name), id+1, 20);
+				ns.exec(grow_script, host_server, batches_possible_curr * GROW_PER_WEAKEN, server.name, grow_delay, id+1, 20);
+				ns.exec(weaken_script, host_server, batches_possible_curr, server.name, weaken_delay, id+1, 20);
 
-				await ns.sleep(weaken_time + 1000);
+				// wait for all the batches of grow-weaken to finish
+				await ns.sleep(weaken_delay + weaken_time + 1000);
+
+				// since we wait for finishing, no earlier weaken scripts will be running anymore
+				finish_at = 0;
 
 			} else if (possible_later) {
 				// wait until enough RAM is freed
 				ns.tprint(`Not enough RAM for batches of grow-weaken on ${server.name}. Will wait until available.`);
+
 				while (!possible_now) {
 					await ns.sleep(10000);
 					// recalc
