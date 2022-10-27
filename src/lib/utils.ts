@@ -15,13 +15,21 @@ export interface ServerDetail {
  *  @param {...(string | number | boolean)} args
 */
 export async function copyAndExec(ns: NS, server: string, script: string, threads: number | "all", ...args: (string | number | boolean)[]) {
-	if (server === "home" || !ns.hasRootAccess(server)) {
+	if (server === "home") {
+		ns.print('Use spawner.js instead');
+		ns.tail();
+		return;
+	}
+
+	if (!ns.hasRootAccess(server)) {
 		ns.print(`Don't have root on ${server}`);
+		ns.tail();
 		return;
 	}
 
 	if (!ns.scp(script, server, "home")) {
-		ns.tprint(`Failed to copy ${script} to ${server}`);
+		ns.print(`Failed to copy ${script} to ${server}`);
+		ns.tail();
 		return;
 	}
 
