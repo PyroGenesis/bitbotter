@@ -1,5 +1,5 @@
 import { NS } from "@ns";
-import { getServerList } from 'lib/utils';
+import { getServerList, ServerDetail } from 'lib/utils';
 
 // const batcher_script = "/hack/batcher.js";
 // const dispatch_script = "/hack/dispatcher.js";
@@ -22,8 +22,8 @@ function getServerAvailableRam(ns: NS) {
  * @param {NS} ns 
 */
 function printArgs(ns: NS) {
-	ns.tprint("No arguments needed for preparer_home.js");
-	// ns.tprint("server    Server to hack");
+	ns.tprint("Arguments needed for preparer_home.js");
+	ns.tprint("server    Optional. Server to prepare.");
 	// ns.tprint("port      Port to out details on");
 }
 
@@ -42,6 +42,7 @@ export async function main(ns: NS) {
 	// }
 	// let server = ns.args[0];
 	// let port = parseInt(ns.args[1]);
+	const target = ns.args.length > 0 ? ns.args[0] as string : null;
 	const host_server = ns.getHostname();
 	
 	// disable default logs
@@ -63,9 +64,20 @@ export async function main(ns: NS) {
 	// unique identifier for each batch
 	let id = 0;
 
+	// if a target server is mentioned, use that. Otherwise,
 	// do all servers, but give priority to server with more money
-    const server_list = getServerList(ns);
-    server_list.sort((a, b) => b.max_money - a.max_money);
+	let server_list: ServerDetail[];
+	if (target !== null) {
+		server_list = [{
+			name: target,
+			max_money: ns.getServerMaxMoney(target),
+			max_ram: ns.getServerMaxRam(target),
+			min_security: ns.getServerMinSecurityLevel(target)
+		}]
+	} else {
+		server_list = getServerList(ns);
+		server_list.sort((a, b) => b.max_money - a.max_money);
+	}
 
 	for (const server of server_list) {
 		// let min_security = ns.getServerMinSecurityLevel(server.name);
