@@ -65,9 +65,9 @@ class LevelBasedParams {
 		
 		// print details
 		this.ns.print("INFO HWGW: ", this.hack_threads, " ", this.weaken_1_threads, " ", this.grow_threads, " ", this.weaken_2_threads)
-		this.ns.print("INFO ram_per_batch:", this.ram_per_batch);
-		this.ns.print("INFO max_time:", this.max_time);
-		this.ns.print("INFO max_batches:", this.max_batches);
+		this.ns.print("INFO ram_per_batch: ", this.ram_per_batch);
+		this.ns.print("INFO max_time: ", this.ns.tFormat(this.max_time));
+		this.ns.print("INFO max_batches: ", this.max_batches);
 	}
 }
 
