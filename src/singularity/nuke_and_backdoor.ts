@@ -12,6 +12,10 @@ async function backdoorServer(ns: NS, server: string) {
 		ns.print(`${server} has already been backdoored.`);
 		return;
     }
+    if (ns.getServerMaxMoney(server) > 0) {
+		ns.print(`${server} doesn't seem to be important enough to backdoor.`);
+		return;
+    }
 
     await ns.singularity.installBackdoor();
 	ns.tprint(`Backdoored ${server}!`);
