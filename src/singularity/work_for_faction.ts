@@ -17,10 +17,12 @@ export async function main(ns: NS) {
 	ns.print("Script start");
     ns.tail();
 
+    const joined_factions = new Set(ns.getPlayer().factions);
     work.sort((a, b) => b.rep - a.rep);
 
     for (const w of work) {
-        // if (ns.singularity.getFactionRep(w.faction) >= w.rep) continue;
+        if (!joined_factions.has(w.faction)) continue;
+
         ns.singularity.workForFaction(w.faction, 'Hacking Contracts', false);
         while (ns.singularity.getFactionRep(w.faction) < w.rep) {
             await ns.sleep(10 * 1000);
