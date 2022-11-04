@@ -2,6 +2,7 @@ import { NS } from "@ns";
 import { nukeServer } from "lib/utils";
 
 const servers = new Set()
+let do_all = false;
 
 async function backdoorServer(ns: NS, server: string) {
     if (!ns.hasRootAccess(server)) {
@@ -12,7 +13,7 @@ async function backdoorServer(ns: NS, server: string) {
 		ns.print(`${server} has already been backdoored.`);
 		return;
     }
-    if (ns.getServerMaxMoney(server) > 0) {
+    if (ns.getServerMaxMoney(server) > 0 && !do_all) {
 		ns.print(`${server} doesn't seem to be important enough to backdoor.`);
 		return;
     }
@@ -48,8 +49,24 @@ async function recurse(ns: NS, server: string) {
 
 }
 
+/** 
+ * @param {NS} ns 
+*/
+function printArgs(ns: NS) {
+	ns.tprint("Arguments needed for nuke_and_backdoor.js");
+	ns.tprint("scope    Optional. Whether to hack all servers. Put 'all' to hack all servers.");
+	// ns.tprint("port      Port to out details on");
+}
+
 /** @param {NS} ns */
 export async function main(ns: NS) {
+	// help
+	if (ns.args.length === 1 && ns.args[0] === 'help') {
+		printArgs(ns);
+		return;
+	}
+	do_all = ns.args.length > 0 && ns.args[0] === "all";
+
 	ns.disableLog("scan");
 	ns.disableLog("getHackingLevel");
 	ns.disableLog("getServerRequiredHackingLevel");
