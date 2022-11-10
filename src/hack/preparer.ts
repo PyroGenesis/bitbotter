@@ -89,7 +89,7 @@ export async function main(ns: NS) {
 		// whether we will have enough RAM to fulfill all weakens needed, but don't have enough right now
 		const possible_later = weak_threads_needed <= weak_threads_possible_max;
 		// we do not have enough RAM to fulfill all weakens needed, not even later, so we do the weakens in batches
-		const need_to_repeat = !possible_later;
+		const need_to_repeat = !possible_later && weak_threads_possible_curr > 0;
 
 		const weaken_time = ns.getWeakenTime(server);
 
@@ -121,6 +121,12 @@ export async function main(ns: NS) {
 				possible_now = weak_threads_needed <= weak_threads_possible_curr;
 			}
 			// no weaken scripts will be running right now, but they will be when the execution loops back
+		} else {
+			// Nothing is possible right now, wait for RAM to increase
+			const curr_ram = getServerAvailableRam(ns);
+			while (getServerAvailableRam(ns) <= curr_ram) {
+				await ns.sleep(10000);
+			}
 		}
 	}
 	
@@ -147,7 +153,7 @@ export async function main(ns: NS) {
 		// whether we will have enough RAM to fulfill all batches needed, but don't have enough right now
 		const possible_later = batches_needed <= batches_possible_max;
 		// we do not have enough RAM to fulfill all batches needed, not even later, so we do the batches in batches
-		const need_to_repeat = !possible_later;
+		const can_repeat = !possible_later && batches_possible_curr > 0;
 
 		const weaken_time = ns.getWeakenTime(server);
 
@@ -166,7 +172,7 @@ export async function main(ns: NS) {
 			ns.exec(weaken_script, host_server, batches_needed, server, weaken_delay, id+1, port);
 
 			break;
-		} else if (need_to_repeat) {
+		} else if (can_repeat) {
 			// launch all possible batches of grow-weaken, we will do more later
 			await ns.writePort(port, `Running ${batches_possible_curr} batches of grow-weaken for ${server}. Will repeat for more.`);
 			ns.exec(grow_script, host_server, batches_possible_curr * GROW_PER_WEAKEN, server, grow_delay, id+1, port);
@@ -187,6 +193,12 @@ export async function main(ns: NS) {
 				// recalc
 				batches_possible_curr = Math.floor(getServerAvailableRam(ns) / ram_per_batch);
 				possible_now = batches_needed <= batches_possible_curr;
+			}
+		} else {
+			// Nothing is possible right now, wait for RAM to increase
+			const curr_ram = getServerAvailableRam(ns);
+			while (getServerAvailableRam(ns) <= curr_ram) {
+				await ns.sleep(10000);
 			}
 		}
 	}
