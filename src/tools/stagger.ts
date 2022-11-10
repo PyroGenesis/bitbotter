@@ -78,9 +78,9 @@ export async function main(ns: NS) {
 	}
 	ns.print(`H: ${hack_percent}%, G: ${grow_percent}%, W: ${weaken_percent}%`);
 
-	const hack_threads = Math.round(threads * hack_percent / 100);
-	const grow_threads = Math.round(threads * grow_percent / 100);
-	const weaken_threads = Math.round(threads * weaken_percent / 100);
+	const hack_threads = Math.floor(threads * hack_percent / 100);
+	const grow_threads = Math.ceil(threads * grow_percent / 100);
+	const weaken_threads = Math.floor(threads * weaken_percent / 100);
 	if ((hack_threads + grow_threads + weaken_threads) > threads) {
 		ns.print(`Something went wrong with rounding. ${hack_threads}H + ${grow_threads}G + ${weaken_threads}W !== ${threads}`);
 		ns.print(`${threads * hack_percent / 100}H + ${threads * grow_percent / 100}G + ${threads * weaken_percent / 100}W !== ${threads}`);
