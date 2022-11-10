@@ -103,29 +103,44 @@ export async function main(ns: NS) {
 	ns.tail();
 	let i: number;
 	
-	const weaken_batches = Math.trunc(weaken_time / 200);
-	const weaken_threads_per_batch = Math.trunc(weaken_threads / weaken_batches);
-    for (i = 0; i < weaken_batches; i++) {
-        ns.exec(scripts[2], server, weaken_threads_per_batch, target, i);
+	const weaken_batches = weaken_time / 200;
+	const weaken_threads_per_batch = weaken_threads / weaken_batches;
+	let weakens_launched = 0;
+	for (i = 0; i < weaken_batches; i++) {
+		const weakens_now = weaken_threads_per_batch * (i + 1);
+		const weakens_to_be_launched = Math.trunc(weakens_now - weakens_launched);
+		if (weakens_to_be_launched >= 1) {
+			ns.exec(scripts[2], server, weakens_to_be_launched, target, (i * 200) / 1000);
+			weakens_launched += weakens_to_be_launched;
+		}
 		await ns.sleep(200);
     }
-	ns.exec(scripts[2], server, weaken_threads % weaken_batches, target, i);
 
-	const grow_batches = Math.trunc(grow_time / 200);
-	const grow_threads_per_batch = Math.trunc(grow_threads / grow_batches);
-    for (i = 0; i < grow_batches; i++) {
-        ns.exec(scripts[1], server, grow_threads_per_batch, target, i);
+	const grow_batches = grow_time / 200;
+	const grow_threads_per_batch = grow_threads / grow_batches;
+	let grows_launched = 0;
+	for (i = 0; i < grow_batches; i++) {
+		const grows_now = grow_threads_per_batch * (i + 1);
+		const grows_to_be_launched = Math.trunc(grows_now - grows_launched);
+		if (grows_to_be_launched >= 1) {
+			ns.exec(scripts[1], server, grows_to_be_launched, target, (i * 200) / 1000);
+			grows_launched += grows_to_be_launched;
+		}
 		await ns.sleep(200);
     }
-	ns.exec(scripts[1], server, grow_threads % grow_batches, target, i);
-
-	const hack_batches = Math.trunc(hack_time / 200);
-	const hack_threads_per_batch = Math.trunc(hack_threads / hack_batches);
-    for (i = 0; i < hack_batches; i++) {
-        ns.exec(scripts[0], server, hack_threads_per_batch, target, i);
+	
+	const hack_batches = hack_time / 200;
+	const hack_threads_per_batch = hack_threads / hack_batches;
+	let hacks_launched = 0;
+	for (i = 0; i < hack_batches; i++) {
+		const hacks_now = hack_threads_per_batch * (i + 1);
+		const hacks_to_be_launched = Math.trunc(hacks_now - hacks_launched);
+		if (hacks_to_be_launched >= 1) {
+			ns.exec(scripts[0], server, hacks_to_be_launched, target, (i * 200) / 1000);
+			hacks_launched += hacks_to_be_launched;
+		}
 		await ns.sleep(200);
     }
-	ns.exec(scripts[0], server, hack_threads % hack_batches, target, i);
     
 	ns.tprint(`Ran ${hack_threads}H, ${grow_threads}G, ${weaken_threads}W threads on ${server}`);
 }
