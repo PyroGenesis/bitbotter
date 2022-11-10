@@ -18,6 +18,10 @@ function printArgs(ns: NS) {
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
+	ns.disableLog('sleep');
+	ns.clearLog();
+	ns.print("Script start");
+
 	// help
 	if (ns.args.length === 1 && ns.args[0] === 'help') {
 		printArgs(ns);
@@ -55,6 +59,7 @@ export async function main(ns: NS) {
 		ns.tail();
 		return;
 	}
+	ns.print(`Total threads: ${threads}`);
 
 	const ratio_split = ratio.split('-');
 	if (ratio_split.length !== 3) {
@@ -71,6 +76,7 @@ export async function main(ns: NS) {
 		ns.tail();
 		return;
 	}
+	ns.print(`H: ${hack_percent}%, G: ${grow_percent}%, W: ${weaken_percent}%`);
 
 	const hack_threads = Math.round(threads * hack_percent / 100);
 	const grow_threads = Math.round(threads * grow_percent / 100);
@@ -78,10 +84,10 @@ export async function main(ns: NS) {
 	if ((hack_threads + grow_threads + weaken_threads) > threads) {
 		ns.print(`Something went wrong with rounding. ${hack_threads}H + ${grow_threads}G + ${weaken_threads}W !== ${threads}`);
 		ns.print(`${threads * hack_percent / 100}H + ${threads * grow_percent / 100}G + ${threads * weaken_percent / 100}W !== ${threads}`);
-
 		ns.tail();
 		return;
 	} 
+	ns.print(`Threads: ${hack_threads}H + ${grow_threads}G + ${weaken_threads}W`);
 
 	const hack_time = ns.getHackTime(target);
 	const grow_time = ns.getGrowTime(target);
