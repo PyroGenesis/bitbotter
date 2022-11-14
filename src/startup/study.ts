@@ -9,7 +9,7 @@ export async function main(ns: NS) {
 		ns.singularity.universityCourse('Rothman University', 'Study Computer Science', false);
 
         while (ns.getHackingLevel() < 20) {
-            ns.sleep(10 * 1000);
+            await ns.sleep(10 * 1000);
         }
         ns.tprint("Finished studying Computer Science");
 	}

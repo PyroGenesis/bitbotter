@@ -18,7 +18,7 @@ export async function main(ns: NS) {
     if (getPlayerMoney(ns) < money_needed) {
         ns.tprint(`Waiting for enough money to buy darkweb programs. Needed: ${money_needed}`);
         while (getPlayerMoney(ns) < money_needed) {
-            ns.sleep(10 * 1000);
+            await ns.sleep(10 * 1000);
         }
     }
 
