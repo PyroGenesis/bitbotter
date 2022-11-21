@@ -50,12 +50,21 @@ export async function main(ns: NS) {
 	}
 
 	// threads
-	const max_ram_per_stagger_script = Math.max( ...scripts.map((s) => ns.getScriptRam(s, 'home')))
-	if (threads === "all") {
-		threads = Math.floor((ns.getServerMaxRam(server) - ns.getServerUsedRam(server)) / max_ram_per_stagger_script);
-	}
-	if (threads === 0) {
+	const max_ram_per_stagger_script = Math.max( ...scripts.map((s) => ns.getScriptRam(s, 'home')));	
+	const max_threads = Math.floor((ns.getServerMaxRam(server) - ns.getServerUsedRam(server)) / max_ram_per_stagger_script);
+
+	// if we cannot launch even a single thread
+	if (max_threads === 0) {
 		ns.print(`No threads available`);
+		ns.tail();
+		return;
+	}
+	if (threads === "all") {
+		// set number of threads to the max possible
+		threads = max_threads;
+	} else if (threads > max_threads) {
+		// threads required are more than possible
+		ns.print(`Threads requested: ${threads}, threads possible: ${max_threads}`);
 		ns.tail();
 		return;
 	}
