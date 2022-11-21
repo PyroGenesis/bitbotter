@@ -67,7 +67,7 @@ export async function main(ns: NS) {
 
     ns.print(division.name, ": ", final_values);
 
-    for (const city of CITIES) {
+    for (const city of division.cities) {
         for (let j=0; j < BOOST_MATERIALS.length; j++) {
             const current = ns.corporation.getMaterial(division.name, city, BOOST_MATERIALS[j]).qty;
             const to_buy = final_values[j] - current;
@@ -81,7 +81,7 @@ export async function main(ns: NS) {
 
     await ns.sleep(5 * 1000);
 
-    for (const city of CITIES) {
+    for (const city of division.cities) {
         for (const material of BOOST_MATERIALS) {
             ns.corporation.buyMaterial(division.name, city, material, 0);
         }
