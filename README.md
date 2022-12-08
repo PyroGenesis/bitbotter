@@ -16,6 +16,8 @@ Below is the list of folders and the type of scripts contained within it. You ca
 | gang | (BN 2+) Gang related scripts. |
 | corp | (BN 3+) Corporation related scripts. |
 | singularity | (BN 4+) Singularity related scripts. |
+| stocks | (BN 8+) Stock market related scripts. |
+| hacknet | (BN 9+) Hacknet server related scripts. |
 | lib | Library scripts are kept here. Not meant to be run by user, only by scripts themselves. |
 
 ## Usage
