@@ -1,7 +1,8 @@
+import { NS } from "@ns";
 import { CITIES } from "corp/constants";
 
 /** @param {NS} ns */
-export async function main(ns) {
+export async function main(ns: NS) {
 	let limit = 0;
 	for (let i = 0; i < ns.args.length; i++) {
 		switch(ns.args[i]) {
@@ -17,7 +18,7 @@ export async function main(ns) {
 		}
 	}
 
-	let divisions = ns.corporation.getCorporation().divisions;
+	const divisions = ns.corporation.getCorporation().divisions;
 
 	for (const division of divisions) {
 		// If this division does not make products, move on to next
