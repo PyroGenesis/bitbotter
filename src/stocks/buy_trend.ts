@@ -40,8 +40,8 @@ function buyLongStock(ns: NS, chosen: {name: string, price: number}) {
     const qty = Math.floor(BUY_AMOUNT / chosen.price)
 
     const buy_price = ns.stock.buyStock(chosen.name, qty);
-    const new_price = Math.round(buy_price * 1.05);
-    const stop_price = Math.round(buy_price * 0.90);
+    // const new_price = Math.round(buy_price * 1.05);
+    // const stop_price = Math.round(buy_price * 0.90);
 
     // ns.stock.placeOrder(chosen.name, qty, new_price, 'limit sell', 'long');
     // ns.stock.placeOrder(chosen.name, qty, stop_price, 'stop sell', 'long');
