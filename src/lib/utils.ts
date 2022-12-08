@@ -7,6 +7,11 @@ export interface ServerDetail {
 	min_security: number;
 }
 
+/** @param {NS} ns */
+export function getPlayerMoney(ns: NS) {
+    return ns.getServerMoneyAvailable("home");
+}
+
 /** 
  *  @param {NS} ns 
  *  @param {string} server
