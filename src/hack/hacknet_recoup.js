@@ -14,7 +14,7 @@ export async function main(ns) {
 	// ns.tprint(`Upgrading ${n-2} nodes to ${ideal_stats.level} level, ${ideal_stats.ram} ram and ${ideal_stats.cores} cores`);
 	
 	let total_cost = 0;
-	let total_production = 0;		
+	let total_production = 0;
 
 	// Skip the last node
 	for (let i = 0; i < n-1; i++) {
