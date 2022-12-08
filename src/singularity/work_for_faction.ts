@@ -8,6 +8,10 @@ const work = [
     { faction: 'Sector-12', rep: 50000 },
     { faction: 'Tian Di Hui', rep: 3750 },
     { faction: 'CyberSec', rep: 0 },
+    { faction: 'Chongqing', rep: 50000 },
+    { faction: 'New Tokyo', rep: 50000 },
+    { faction: 'Ishima', rep: 50000 },
+    { faction: 'Netburners', rep: 12500 },
 ]
 
 /** @param {NS} ns */
