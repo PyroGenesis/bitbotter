@@ -1,10 +1,74 @@
-import { NS } from "@ns";
+import { AugmentationStats, NS } from "@ns";
 import { LogEntries, LogEntry, printClean } from "/lib/logging";
+
+class AugTypes {
+    hacking: boolean;
+    combat: boolean;
+    work: boolean;
+    faction: boolean;
+    crime: boolean;
+    hacknet: boolean;
+    bladeburner: boolean;
+    // other: boolean;
+
+    constructor() {
+        this.hacking = false;
+        this.combat = false;
+        this.work = false;
+        this.faction = false;
+        this.crime = false;
+        this.hacknet = false;
+        this.bladeburner = false;
+    }
+
+    getArray(): string[] {
+        const arr = []
+        if (this.hacking) arr.push("hacking");
+        if (this.combat) arr.push("combat");
+        if (this.work) arr.push("work");
+        if (this.faction) arr.push("faction");
+        if (this.crime) arr.push("crime");
+        if (this.hacknet) arr.push("hacknet");
+        if (this.bladeburner) arr.push("bladeburner");
+        if (arr.length === 0) arr.push("other");
+        return arr;
+    }
+}
 
 interface Aug {
     name: string,
     cost: number,
     faction: string,
+}
+
+function getAugmentationFocus(stats: AugmentationStats): string {
+    const aug_types = new AugTypes();
+
+    if (stats.hacking !== 1 || 
+        stats.hacking_chance !== 1 || stats.hacking_speed !== 1 || stats.hacking_money !== 1 || stats.hacking_grow !== 1 || stats.hacking_exp !== 1) {
+        aug_types.hacking = true;
+    }
+    if (stats.strength !== 1 || stats.defense !== 1 || stats.dexterity !== 1 || stats.agility !== 1 || stats.charisma !== 1 ||
+        stats.strength_exp !== 1 || stats.defense_exp !== 1 || stats.dexterity_exp !== 1 || stats.agility_exp !== 1 || stats.charisma_exp !== 1) {
+        aug_types.combat = true;
+    }
+    if (stats.company_rep !== 1 || stats.work_money !== 1) {
+        aug_types.work = true;
+    }
+    if (stats.faction_rep !== 1) {
+        aug_types.faction = true;
+    }
+    if (stats.crime_money !== 1 || stats.crime_success !== 1) {
+        aug_types.crime = true;
+    }
+    if (stats.hacknet_node_money !== 1 || stats.hacknet_node_purchase_cost !== 1 || stats.hacknet_node_ram_cost !== 1 || stats.hacknet_node_core_cost !== 1 || stats.hacknet_node_level_cost !== 1) {
+        aug_types.hacknet = true;
+    }
+    if (stats.bladeburner_max_stamina !== 1 || stats.bladeburner_stamina_gain !== 1 || stats.bladeburner_analysis !== 1 || stats.bladeburner_success_chance !== 1) {
+        aug_types.bladeburner = true;
+    }
+
+    return aug_types.getArray().join(',');
 }
 
 /** 
@@ -62,6 +126,7 @@ export async function main(ns: NS) {
     heading.values.push('Faction');
     heading.values.push('Name');
     heading.values.push('Cost');
+    heading.values.push('Focus');
     output.addLog(heading);
     
     for (const aug of augs) {
@@ -92,6 +157,10 @@ export async function main(ns: NS) {
                 entry.values.push(a.faction);
                 entry.values.push(a.name);
                 entry.values.push(ns.nFormat(actual_cost, "$0.00a"));
+
+                const stats = ns.singularity.getAugmentationStats(a.name);
+                entry.values.push(getAugmentationFocus(stats));
+
                 output.addLog(entry);
 
                 total_cost += actual_cost
@@ -109,6 +178,7 @@ export async function main(ns: NS) {
     total.values.push('');
     total.values.push('TOTAL:');
     total.values.push(ns.nFormat(total_cost, "$0.00a"));
+    total.values.push('');
     output.addLog(total);
 
     printClean(ns, output);
