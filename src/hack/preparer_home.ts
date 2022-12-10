@@ -134,7 +134,7 @@ export async function main(ns: NS) {
 				while (!possible_now) {
 					await ns.sleep(10000);
 					// recalc
-					weak_threads_possible_curr = Math.floor((ns.getServer().maxRam - ns.getScriptRam(ns.getScriptName())) / 1.75);
+					weak_threads_possible_curr = Math.floor(getServerAvailableRam(ns) / 1.75);
 					possible_now = weak_threads_needed <= weak_threads_possible_curr;
 				}
 				// no weaken scripts will be running right now, but they will be when the execution loops back
