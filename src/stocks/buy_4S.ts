@@ -9,6 +9,7 @@ interface Stock4S {
     position: number[]
 }
 
+const SELL_ONLY_MODE = false;
 const COMMISSION = 1e5;
 const LONG_BOUNDARY = 0.6;
 const SHORT_BOUNDARY = 0.4;
@@ -117,6 +118,7 @@ export async function main(ns: NS) {
         if (!best_stock) continue;
                 
         // buy
+        if (SELL_ONLY_MODE) continue;
         if (best_stock.forecast > 0.5) {
             buyLongStock(ns, best_stock.name);
         } else {
