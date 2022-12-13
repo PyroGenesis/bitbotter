@@ -3,7 +3,7 @@ import { getServerList, ServerDetail } from 'lib/utils';
 
 // const batcher_script = "/hack/batcher.js";
 // const dispatch_script = "/hack/dispatcher.js";
-// const hack_script = "/hack/hack_once.js";
+// const hack_script = "/hack/wait_hack.js";
 const grow_script = "/hack/wait_grow.js";
 const weaken_script = "/hack/wait_weaken.js";
 
