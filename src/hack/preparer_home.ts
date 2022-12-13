@@ -154,7 +154,7 @@ export async function main(ns: NS) {
 			if (ns.getServerMoneyAvailable(server.name) === server.max_money) break;
 
 			// grow weaken batch
-			const grow_multipler_required = server.max_money / ns.getServerMoneyAvailable(server.name);
+			const grow_multipler_required = server.max_money / Math.max(ns.getServerMoneyAvailable(server.name), 1);
 			// batches needed to attain 100% cash
 			const batches_needed = Math.ceil(ns.growthAnalyze(server.name, grow_multipler_required, ns.getServer().cpuCores) / GROW_PER_WEAKEN);
 
