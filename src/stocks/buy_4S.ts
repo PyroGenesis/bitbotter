@@ -9,7 +9,6 @@ interface Stock4S {
     position: number[]
 }
 
-const SELL_ONLY_MODE = false;
 const COMMISSION = 1e5;
 const LONG_BOUNDARY = 0.6;
 const SHORT_BOUNDARY = 0.4;
@@ -41,11 +40,28 @@ function buyShortStock(ns: NS, chosen: string) {
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
+	let SELL_ONLY_MODE = false;
+	for (let i = 0; i < ns.args.length; i++) {
+		switch(ns.args[i]) {
+			case '-s':
+			case '--sell-only':
+				SELL_ONLY_MODE = true;
+				break;
+			
+			default:
+				ns.print("Invalid argument " + ns.args[i]);
+				ns.tail();
+				break;
+		}
+	}
+
     ns.disableLog('sleep');
     ns.disableLog('getServerMoneyAvailable');
     ns.clearLog();
-    ns.print('script start')
+    ns.print('script start');
     ns.tail();
+
+    ns.print(`Sell-only mode: ${SELL_ONLY_MODE}`);
 
     // check API access
     const err = [];
