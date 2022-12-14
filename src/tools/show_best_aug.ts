@@ -1,5 +1,5 @@
 import { AugmentationStats, NS } from "@ns";
-import { LogEntries, LogEntry, printClean } from "/lib/logging";
+import { LogEntries, LogEntry, printClean } from "lib/logging";
 
 class AugTypes {
     hacking: boolean;
