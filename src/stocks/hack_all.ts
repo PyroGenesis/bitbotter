@@ -23,18 +23,12 @@ function getServerAvailableRam(ns: NS) {
 */
 function printArgs(ns: NS) {
 	ns.tprint("Arguments needed for hack_all.js");
-	ns.tprint("server    Optional. Single server to hack 100%.");
-	// ns.tprint("port      Port to out details on");
+	ns.tprint("-s <server>     Optional. Single server to hack.");
+	ns.tprint("-p <percent>    Optional. Percent of money to hack. Default: 50%");
 }
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
-	// help
-	if (ns.args.length === 1 && ns.args[0] === 'help') {
-		printArgs(ns);
-		return;
-	}
-
 	// check for arguments
 	// if (ns.args.length < 1) {
 	// 	ns.tprint("Not enough arguments");
@@ -42,7 +36,42 @@ export async function main(ns: NS) {
 	// }
 	// let server = ns.args[0];
 	// let port = parseInt(ns.args[1]);
-	const target = ns.args.length > 0 ? ns.args[0] as string : null;
+
+	let target = null;
+	let percent = 50;
+	for (let i = 0; i < ns.args.length; i++) {
+		switch(ns.args[i]) {
+			case 'help':
+				printArgs(ns);
+				return;
+			
+			case '-s':
+				if (i+1 > ns.args.length) {
+					ns.print("Please provide a target server name after the -s argument");
+					ns.tail();
+					return;
+				}
+				target = ns.args[i+1] as string;
+				i++;
+				break;
+						
+			case '-p':
+				if (i+1 > ns.args.length) {
+					ns.print("Please provide the percent of money to hack after the -p argument");
+					ns.tail();
+					return;
+				}
+				percent = ns.args[i+1] as number;
+				i++;
+				break;
+			
+			default:
+				ns.print("Invalid argument " + ns.args[i]);
+				ns.tail();
+				break;
+		}
+	}
+	
 	const host_server = ns.getHostname();
 	
 	// disable default logs
@@ -81,7 +110,7 @@ export async function main(ns: NS) {
 	}
 
 	for (const server of server_list) {
-		const hack_threads_needed = Math.ceil(ns.hackAnalyzeThreads(server.name, ns.getServerMoneyAvailable(server.name)));
+		const hack_threads_needed = Math.ceil(ns.hackAnalyzeThreads(server.name, ns.getServerMoneyAvailable(server.name) * (percent / 100)));
 		const hack_threads_possible_max = Math.floor((ns.getServer().maxRam - ns.getScriptRam(ns.getScriptName())) / 1.70);
 		let hack_threads_possible_curr = Math.floor(getServerAvailableRam(ns) / 1.70);
 
