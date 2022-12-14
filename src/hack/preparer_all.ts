@@ -36,12 +36,6 @@ export async function main(ns: NS) {
 	}
 
 	// check for arguments
-	// if (ns.args.length < 1) {
-	// 	ns.tprint("Not enough arguments");
-	// 	return;
-	// }
-	// let server = ns.args[0];
-	// let port = parseInt(ns.args[1]);
 	const target = ns.args.length > 0 ? ns.args[0] as string : null;
 	const host_server = ns.getHostname();
 	
@@ -59,7 +53,17 @@ export async function main(ns: NS) {
 	ns.print("Script start");
 
 	// kill anything running before
-	// ns.killall(host_server, true);
+	// (only if not home)
+	if (host_server !== 'home') {
+		ns.killall(host_server, true);
+	}
+
+	// copy over all relevant files
+	// (again, if not home)
+	if (host_server !== 'home') {
+		ns.scp('/lib/utils.js', host_server, 'home');
+		ns.scp([grow_script, weaken_script], host_server, "home");
+	}
 
 	// unique identifier for each batch
 	let id = 0;
