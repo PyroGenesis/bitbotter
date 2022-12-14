@@ -44,7 +44,7 @@ export async function main(ns: NS) {
             const member_info = ns.gang.getMemberInformation(member);
             const asc_info = ns.gang.getAscensionResult(member);
             if (asc_info === undefined) {
-                action.action = member_info.task;
+                action.action = "Human Trafficking";
                 ns.print(`${member} cannot yet be ascended`);
                 await ns.sleep(1 * 1000);
                 continue;
