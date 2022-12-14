@@ -22,6 +22,13 @@ export async function main(ns: NS) {
     while (true) {
         // get members
         const members = ns.gang.getMemberNames();
+
+        // recruit if we can
+        if (ns.gang.canRecruitMember()) {
+            const new_member = String.fromCharCode(members.length + 'A'.charCodeAt(0));
+            ns.gang.recruitMember(new_member)
+            members.push(new_member);
+        }
         
         // set everyone to territory
         // only if we don't have all the territory
