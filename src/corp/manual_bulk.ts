@@ -1,50 +1,108 @@
 import { NS } from "@ns";
-import { BOOST_MATERIALS, MATERIAL_RATIOS, MATERIAL_SPACE_IDX, CITIES } from "corp/constants";
+import { BOOST_MATERIALS, MATERIAL_RATIOS } from "corp/constants";
 
-// const jobs = ["Operations","Engineer","Business","Management","Research & Development"];
-// const boost_materials = ["Hardware","Robots","AI Cores","Real Estate"]
-// const level_upgrades = ["Smart Factories","Smart Storage","FocusWires","Neural Accelerators", "Speech Processor Implants", "Nuoptimal Nootropic Injector Implants","Wilson Analytics"]
-// const cities = ["Aevum","Chongqing","New Tokyo","Ishima","Volhaven","Sector-12"];
+/** 
+ * @param {NS} ns 
+*/
+function printArgs(ns: NS) {
+	ns.tprint("Arguments needed for manual_bulk.js");
+	ns.tprint("<industry>      Industry to buy for");
+	ns.tprint("-h <qty>        Optional. The amount of total Hardware to have after buying. Defaults to 0 (don't buy any)");
+	ns.tprint("-r <qty>        Optional. The amount of total Robots to have after buying. Defaults to 0 (don't buy any)");
+	ns.tprint("-a <qty>        Optional. The amount of total AI Cores to have after buying. Defaults to 0 (don't buy any)");
+	ns.tprint("-e <qty>        Optional. The amount of total Real Estate to have after buying. Defaults to 0 (don't buy any)");
+	ns.tprint("-s <storage>    Optional. The amount of total storage to have before buying materials. Defaults to 0 (don't buy any)");
+}
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
+	// help
+	if (ns.args.length === 1 && ns.args[0] === 'help') {
+		printArgs(ns);
+		return;
+	}
+
+	// check for required arguments
+	if (ns.args.length < 3) {
+		ns.print("Not enough arguments");
+		return;
+	}
+    const chosen_industry = ns.args[0] as string;
+
+    // Optional args
+    let hw = 0;
+    let rb = 0;
+    let ai = 0;
+    let re = 0;
+    let storage = 0;
+
+	for (let i = 1; i < ns.args.length; i++) {
+		switch(ns.args[i]) {
+			case '-h':
+				if (i+1 > ns.args.length) {
+					ns.print("Please provide the total Hardware after the -h argument");
+					ns.tail();
+					return;
+				}
+				hw = ns.args[i+1] as number;
+				i++;
+				break;
+
+			case '-r':
+				if (i+1 > ns.args.length) {
+					ns.print("Please provide the total Robots after the -r argument");
+					ns.tail();
+					return;
+				}
+				rb = ns.args[i+1] as number;
+				i++;
+				break;
+
+			case '-a':
+				if (i+1 > ns.args.length) {
+					ns.print("Please provide the total AI Cores after the -a argument");
+					ns.tail();
+					return;
+				}
+				ai = ns.args[i+1] as number;
+				i++;
+				break;
+
+			case '-e':
+				if (i+1 > ns.args.length) {
+					ns.print("Please provide the total Real Estate after the -e argument");
+					ns.tail();
+					return;
+				}
+				re = ns.args[i+1] as number;
+				i++;
+				break;
+
+			case '-s':
+				if (i+1 > ns.args.length) {
+					ns.print("Please provide the total Storage after the -s argument");
+					ns.tail();
+					return;
+				}
+				storage = ns.args[i+1] as number;
+				i++;
+				break;
+			
+			default:
+				ns.print("Invalid argument " + ns.args[i]);
+				ns.tail();
+				break;
+		}
+	}
+
 	ns.clearLog();
 
-	// let divisions = Object.keys(ratios);
-	// for (let i = 0; i < ns.args.length; i++) {
-	// 	switch(ns.args[i]) {
-	// 		case '-c':
-	// 			if (i+1 > ns.args.length) {
-	// 				ns.print("Please specify a company name or multiple separated by comma");
-	// 				ns.tail();
-	// 				return;
-	// 			}
-	// 			divisions = (ns.args[i+1] as string).split(',');
-	// 			i++;
-	// 			break;
-			
-	// 		default:
-	// 			ns.print("Invalid argument " + ns.args[i]);
-	// 			ns.tail();
-	// 			break;
-	// 	}
-	// }
-
-    const bonus_time = ns.corporation.getBonusTime();
-    if (bonus_time > 5000) {
-        ns.print("Must wait for bonus time to finish: ", ns.tFormat(bonus_time));
-        ns.tail();
-        return;
-    }
-
-    const chosen_industry = "Tobacco";
     if (!MATERIAL_RATIOS[chosen_industry]) {
         ns.print(`Invalid industry: ${chosen_industry}`);
         ns.tail();
         return;
     }
 
-    const space_to_fill = 1800;
     const division = ns.corporation.getCorporation().divisions.find((div) => div.type === chosen_industry);
     if (!division) {
         ns.print(`Division not found for industry: ${chosen_industry}`);
@@ -52,34 +110,39 @@ export async function main(ns: NS) {
         return;
     }
 
-    // values to end up with
-    // const space_to_fill = ns.corporation.getWarehouse(division, CITIES[0]).size / 4;
-    const space_per_batch = MATERIAL_RATIOS[chosen_industry].reduce((prev, curr, i) => {
-        // ns.tprint(p, " ", c, " ", i);
-        return curr * MATERIAL_SPACE_IDX[i] + prev;
-    }, 0);
+    // buy storage
+    if (storage > 0) {
+        for (const city of division.cities) {
+            while (ns.corporation.getWarehouse(division.name, city).size < storage) {
+                ns.corporation.upgradeWarehouse(division.name, city);
+                await ns.sleep(10);
+            }
+        }
+    }
 
-    // rounded multiplier (pessimistic)
-    const multiplier = Math.floor(space_to_fill / space_per_batch);
-    // multiplier reduced to multiple of 10
-    // multiplier = Math.trunc(multiplier / 10) * 10;
-    const final_values = MATERIAL_RATIOS[chosen_industry].map((val) => val * multiplier);
-
-    ns.print(division.name, ": ", final_values);
+    const final_values = [hw, rb, ai, re];
+    // ns.print(division.name, ": ", final_values);
 
     for (const city of division.cities) {
         for (let j=0; j < BOOST_MATERIALS.length; j++) {
+            // skip if this resource not needed
+            if (final_values[j] <= 0) continue;
             const current = ns.corporation.getMaterial(division.name, city, BOOST_MATERIALS[j]).qty;
             const to_buy = final_values[j] - current;
+            // skip if this resource is satisfied
+            if (to_buy <= 0) continue;
             
-            if (to_buy > 0) {
-                ns.print(`Buying ${to_buy} ${BOOST_MATERIALS[j]} for ${division.name} in ${city}`)
-                ns.corporation.buyMaterial(division.name, city, BOOST_MATERIALS[j], to_buy / 10);
-            }
+            ns.print(`Buying ${to_buy} ${BOOST_MATERIALS[j]} for ${division.name} in ${city}`)
+            ns.corporation.buyMaterial(division.name, city, BOOST_MATERIALS[j], to_buy / 10);
         }
     }	
 
-    await ns.sleep(5 * 1000);
+	let sleep_for = 5 * 1000;
+    const bonus_time = ns.corporation.getBonusTime();
+    if (bonus_time > 5000) {
+		sleep_for = 1 * 1000
+    }
+    await ns.sleep(sleep_for);
 
     for (const city of division.cities) {
         for (const material of BOOST_MATERIALS) {
