@@ -61,7 +61,7 @@ export async function main(ns: NS) {
 	// copy over all relevant files
 	// (again, if not home)
 	if (host_server !== 'home') {
-		ns.scp('/lib/utils.js', host_server, 'home');
+		// ns.scp('/lib/utils.js', host_server, 'home');
 		ns.scp([grow_script, weaken_script], host_server, "home");
 	}
 

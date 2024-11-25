@@ -19,11 +19,11 @@ export async function main(ns: NS) {
     ns.killall("sigma-cosmetics");
     ns.killall("joesguns");
 
-	ns.run(exec_script, 1, "foodnstuff", "all", grow_script, "n00dles");
-	ns.run(exec_script, 1, "nectar-net", "all", weaken_script, "n00dles");
-	ns.run(exec_script, 1, "n00dles", "all", hack_script, "n00dles");
-	ns.run(exec_script, 1, "sigma-cosmetics", "all", hack_script, "n00dles");
-	ns.run(exec_script, 1, "joesguns", "all", hack_script, "n00dles");
+	ns.run(exec_script, 1, "foodnstuff", grow_script, "-t", "all", "-a", "n00dles");
+	ns.run(exec_script, 1, "nectar-net", weaken_script, "-t", "all", "-a", "n00dles");
+	ns.run(exec_script, 1, "n00dles", hack_script, "-t", "all", "-a", "n00dles");
+	ns.run(exec_script, 1, "sigma-cosmetics", hack_script, "-t", "all", "-a", "n00dles");
+	ns.run(exec_script, 1, "joesguns", hack_script, "-t", "all", "-a", "n00dles");
 
     ns.tprint("Setup scripts for hacking n00dles");
 

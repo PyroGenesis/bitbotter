@@ -9,6 +9,7 @@ interface Stock4S {
     position: number[]
 }
 
+const CAN_SHORT = false;
 const COMMISSION = 1e5;
 const LONG_BOUNDARY = 0.6;
 const SHORT_BOUNDARY = 0.4;
@@ -116,6 +117,8 @@ export async function main(ns: NS) {
         for (const stock of stocks) {
             // check for boundary conditions first
             if (!(stock.forecast >= LONG_BOUNDARY || stock.forecast <= SHORT_BOUNDARY)) continue;
+            // check if it's a short candidate and we CAN short
+            if (stock.forecast < 0.5 && !CAN_SHORT) continue;
             // check if all shares are already sold
             if (stock.position[0] + stock.position[2] === ns.stock.getMaxShares(stock.name)) continue;
             // check if there is a prev candidate

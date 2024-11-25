@@ -21,7 +21,7 @@ export async function main(ns: NS) {
         // first kill everything on that server
         ns.killall(purchased_server);
         // run preparer.js for the best money server
-		ns.exec(exec_script, "home", 1, purchased_server, 1, preparer_script, server_list[server_idx].name, i);
+		ns.exec(exec_script, "home", 1, purchased_server, preparer_script, '-a', server_list[server_idx].name, i);
         // select next server to be hacked
         server_idx++;
 	}

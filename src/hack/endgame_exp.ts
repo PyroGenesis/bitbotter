@@ -15,6 +15,6 @@ export async function main(ns: NS) {
         // first kill everything on that server
         ns.killall(purchased_server);
         // run weaken script for massive exp
-		ns.exec(exec_script, "home", 1, purchased_server, "all", weaken_script, "foodnstuff");
+		ns.exec(exec_script, "home", 1, purchased_server, weaken_script, "-t", "all", "-a", "foodnstuff");
 	}
 }

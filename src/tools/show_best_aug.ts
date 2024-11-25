@@ -2,8 +2,18 @@ import { AugmentationStats, NS } from "@ns";
 import { LogEntries, LogEntry, printClean } from "lib/logging";
 
 class AugTypes {
+    // separate skills
     hacking: boolean;
-    combat: boolean;
+    strength: boolean;
+    defense: boolean;
+    dexterity: boolean;
+    agility: boolean;
+    charisma: boolean;
+
+    // groups
+    #combat: boolean;
+    #all: boolean;
+
     work: boolean;
     faction: boolean;
     crime: boolean;
@@ -13,7 +23,15 @@ class AugTypes {
 
     constructor() {
         this.hacking = false;
-        this.combat = false;
+        this.strength = false;
+        this.defense = false;
+        this.dexterity = false;
+        this.agility = false;
+        this.charisma = false;
+
+        this.#combat = false;
+        this.#all = false;        
+
         this.work = false;
         this.faction = false;
         this.crime = false;
@@ -23,8 +41,29 @@ class AugTypes {
 
     getArray(): string[] {
         const arr = []
-        if (this.hacking) arr.push("hacking");
-        if (this.combat) arr.push("combat");
+
+        this.#combat = this.strength && this.defense && this.dexterity && this.agility;
+        this.#all = this.#combat && this.hacking && this.charisma;
+
+        if (this.#all) {
+            arr.push("all");
+        } else if (this.#combat) {
+            arr.push("combat");
+        }
+
+        if (!this.#all) {
+            if (this.hacking) arr.push("hacking");
+
+            if (!this.#combat) {
+                if (this.strength) arr.push("strength");
+                if (this.defense) arr.push("defense");
+                if (this.dexterity) arr.push("dexterity");
+                if (this.agility) arr.push("agility");
+            }
+
+            if (this.charisma) arr.push("charisma");
+        }
+
         if (this.work) arr.push("work");
         if (this.faction) arr.push("faction");
         if (this.crime) arr.push("crime");
@@ -41,6 +80,48 @@ interface Aug {
     faction: string,
 }
 
+const extraFormats = [1e15, 1e18, 1e21, 1e24, 1e27, 1e30];
+const extraNotations = ["q", "Q", "s", "S", "o", "n"];
+function bigNumberFormatter(ns: NS, n: number, prefix = "$", decimals = 2, commas = true): string {
+    // build the format string according to the args
+    let f = prefix;
+    if (commas) {
+        f += "0,0";
+    } else {
+        f += "0"
+    }
+    if (decimals > 0) f += "." + "0".repeat(decimals);
+    f += "a"    
+
+    // define a suffix if the number is too big
+    // we will also reduce the number when a custom suffix is defined, 
+    //      so that we can apply formatting to the rest of the number
+    let suffix = null;
+    for (let i = extraFormats.length - 1; i >= 0; i--) {
+        if (n > extraFormats[i]) {
+            suffix = extraNotations[i];
+            n /= extraFormats[i];
+            break;
+        }
+    }
+
+    // use nFormat
+    let res = ns.nFormat(n, f);
+    // add the suffix if necessary
+    if (suffix !== null) {
+        // we will replace any non-numeric suffix added by the nFormat and replace it with our own
+        const last_char = res[res.length - 1];
+        if (last_char >= "0" && last_char <= "9") {
+            res += suffix;
+        } else {
+            res = res.substring(0, res.length - 1) + suffix
+        }
+    }
+    
+    // result
+    return res;
+}
+
 function getAugmentationFocus(stats: AugmentationStats): string {
     const aug_types = new AugTypes();
 
@@ -48,9 +129,20 @@ function getAugmentationFocus(stats: AugmentationStats): string {
         stats.hacking_chance !== 1 || stats.hacking_speed !== 1 || stats.hacking_money !== 1 || stats.hacking_grow !== 1 || stats.hacking_exp !== 1) {
         aug_types.hacking = true;
     }
-    if (stats.strength !== 1 || stats.defense !== 1 || stats.dexterity !== 1 || stats.agility !== 1 || stats.charisma !== 1 ||
-        stats.strength_exp !== 1 || stats.defense_exp !== 1 || stats.dexterity_exp !== 1 || stats.agility_exp !== 1 || stats.charisma_exp !== 1) {
-        aug_types.combat = true;
+    if (stats.strength !== 1 || stats.strength_exp !== 1) {
+        aug_types.strength = true;
+    }
+    if (stats.defense !== 1 || stats.defense_exp !== 1) {
+        aug_types.defense = true;
+    }
+    if (stats.dexterity !== 1 || stats.dexterity_exp !== 1) {
+        aug_types.dexterity = true;
+    }
+    if (stats.agility !== 1 || stats.agility_exp !== 1) {
+        aug_types.agility = true;
+    }
+    if (stats.charisma !== 1 || stats.charisma_exp !== 1) {
+        aug_types.charisma = true;
     }
     if (stats.company_rep !== 1 || stats.work_money !== 1) {
         aug_types.work = true;
@@ -116,7 +208,7 @@ export async function main(ns: NS) {
     }
 
     augs.sort((a, b) => b.cost - a.cost);
-    let multiplier = 1;
+    let multiplier = ns.singularity.getAugmentationPrice(augs[0].name) / ns.singularity.getAugmentationBasePrice(augs[0].name);
     let total_cost = 0;
 
     const done = new Set<string>();
@@ -156,7 +248,7 @@ export async function main(ns: NS) {
                 const entry = new LogEntry();
                 entry.values.push(a.faction);
                 entry.values.push(a.name);
-                entry.values.push(ns.nFormat(actual_cost, "$0.00a"));
+                entry.values.push(bigNumberFormatter(ns, actual_cost));
 
                 const stats = ns.singularity.getAugmentationStats(a.name);
                 entry.values.push(getAugmentationFocus(stats));
@@ -177,7 +269,7 @@ export async function main(ns: NS) {
     const total = new LogEntry();
     total.values.push('');
     total.values.push('TOTAL:');
-    total.values.push(ns.nFormat(total_cost, "$0.00a"));
+    total.values.push(bigNumberFormatter(ns, total_cost));
     total.values.push('');
     output.addLog(total);
 

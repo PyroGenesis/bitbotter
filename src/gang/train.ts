@@ -26,7 +26,7 @@ export async function main(ns: NS) {
         // recruit if we can
         if (ns.gang.canRecruitMember()) {
             const new_member = String.fromCharCode(members.length + 'A'.charCodeAt(0));
-            ns.gang.recruitMember(new_member)
+            ns.print("New Recruit: ", ns.gang.recruitMember(new_member));
             members.push(new_member);
         }
         

@@ -1,8 +1,8 @@
 import { NS, NodeStats } from "@ns";
-import { HacknetServerConstants } from "/hacknet/constants";
+import { HacknetServerConstants } from "hacknet/constants";
 
 // cheat mode allows calculate various formulas without using formulas.exe
-const CHEAT_MODE = false;
+const CHEAT_MODE = true;
 const EPSILON_MONEY = 1e-1;
 const EPSILON_GAIN = 1e-10;
 
